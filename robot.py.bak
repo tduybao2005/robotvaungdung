@@ -1,0 +1,47 @@
+import time
+import serial
+
+PORT_NAME = '/dev/ttyACM0'  # Đổi thành '/dev/ttyTHS1' nếu chạy trực tiếp trên Jetson Xavier
+BAUD_RATE = 115200
+
+# Khởi tạo kết nối UART
+try:
+    ser = serial.Serial(port=PORT_NAME, baudrate=BAUD_RATE, timeout=1)
+    time.sleep(2)
+    print(f"Đã mở cổng {PORT_NAME} thành công!")
+except Exception as e:
+    print("Lỗi kết nối:", e)
+    exit()
+
+# Danh sách quỹ đạo đã chuyển đổi sang sơ đồ chân mới:
+# #8 -> Khớp 1 | #7 -> Khớp 2 | #6 -> Khớp 3 | #5 -> Khớp 4 | #4 -> Khớp 5
+trajectory_commands = [
+    "#6P1500#4P1500#5P1500#7P1500#8P1500T1000D1000",
+    "#6P948#4P1519#5P926#7P1035#8P1400T1000D1000",
+    "#6P935#8P1512T1000D1000",
+    "#8P1546T1000D1000",
+    "#6P769#5P959#7P1100#8P1534T1000D1000",
+    "#6P769#4P1519#5P959#7P1115#8P1534T1000D1000",
+    "#5P859#8P1554T1000D1000",
+    "#6P797#4P1519#5P882#7P1150#8P1456T1000D1000",
+    "#6P800#7P1150#8P1372T1000D1000",
+    "#6P800#7P1150#8P1372T1000D1000",
+    "#6P650#5P733#7P1260#8P1330T1000D1000",
+    "#6P730#5P600#7P1200#8P1550T1000D1000",
+    "#5P754#7P1192#8P1532T1000D1000",
+    "#5P1050#7P1030#8P1550T1000D1000"
+]
+
+print("Bắt đầu chạy quỹ đạo vẽ số 6...")
+
+for i, cmd in enumerate(trajectory_commands):
+    raw_packet = (cmd + "\r\n").encode('ascii')
+    ser.write(raw_packet)
+    ser.flush()
+    print(f"[{i + 1}/{len(trajectory_commands)}] Gửi lệnh: {cmd}")
+    
+    # Tổng thời gian T1000 + D1000 = 2000ms = 2.0s
+    time.sleep(2.05)
+
+ser.close()
+print("Hoàn thành chương trình vẽ!")`
